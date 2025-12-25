@@ -12,7 +12,8 @@ pico_sdk_init()
 
 
 add_executable(display
-    main.c
+    src/main.c
+    src/ST7789/hardware_init.c
 )
 
 target_link_libraries(display 

@@ -16,7 +16,7 @@
 
 // Display dimensions
 #define SCREEN_WIDTH 320
-#define SCREEN_HEIGHT 340
+#define SCREEN_HEIGHT 240
 
 // Define GPIO pins 
 #define PIN_CS   17
@@ -25,10 +25,10 @@
 #define PIN_SCK  18
 #define PIN_MOSI 19
 #define PIN_BL   20
-#define SPI_PORT        spi0
+#define SPI_PORT spi0
 
 // ST7789 commands
-#define ST7789_SWRST    0x01
+#define ST7789_SWRST  0x01
 #define ST7789_SLPOUT 0x11
 #define ST7789_NORON  0x13
 #define ST7789_INVOFF 0x20
@@ -94,7 +94,6 @@ void draw_pixel(uint16_t x, uint16_t y, uint16_t color) {
         return;
     }
 
-    // Set the drawing window to the single pixel location
     set_address_window(x, y, x, y);
 
     // The ST7789 expects big-endian RGB565 data.
@@ -153,11 +152,10 @@ void st7789_init() {
     sleep_ms(10);
 
     spi_write_command(ST7789_MADCTL); 
-    data[0] = 0x00;
+    data[0] = 0x60;
     spi_write_data(data, 1); 
 
     spi_write_command(ST7789_INVON); 
-
 
     spi_write_command(ST7789_DISPON); 
     sleep_ms(100);
@@ -167,10 +165,7 @@ void st7789_init() {
     gpio_put(PIN_BL, 1);
 }
 
-int main() { 
-
-    display_spi_init();
-
+void gpio_pin_init() {
     gpio_init(PIN_DC);
     gpio_set_dir(PIN_DC, GPIO_OUT);
     gpio_put(PIN_DC, 1);
@@ -207,15 +202,4 @@ int main() {
     gpio_init(BUTTON_Y);
     gpio_set_dir(BUTTON_Y, GPIO_IN);
     gpio_pull_up(BUTTON_Y);
-
-
-    st7789_init();
-
-
-    uint16_t red = color565(255, 0, 0);
-    for (uint32_t i = 0; i < SCREEN_HEIGHT; i++) {
-        for (uint32_t j = 0; j < SCREEN_WIDTH; j++) {
-            draw_pixel(j, i, red);
-        }
-    }
 }
