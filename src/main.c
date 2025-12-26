@@ -19,33 +19,6 @@ int main() {
 
     fill_screen(black);
 
-    //draw_line(0, 0, 170, 120, red);
-
-    /*fill_rectangle(50, 95, 150, 50, red);
-
-    fill_circle(50, 95, 25, red);
-    fill_circle(50, 140, 25, red);
-
-    fill_circle(200, 119, 25, red);
-
-    sleep_ms(500);
-
-    draw_hline(235, 120, 10, red);
-
-    sleep_ms(500);
-
-    draw_hline(250, 120, 10, red);
-
-    sleep_ms(500);
-
-    draw_hline(265, 120, 10, red);
-
-    sleep_ms(500);
-
-    draw_text(0, 30, 16, red, "penis.");
-
-    sleep_ms(500);*/
-
     draw_text(0, 30, 16, red, "IM A GOOFY GOOBER, YEAH!!");
 
     //draw_bmp(0, 0, midnight_bmp, 90);
