@@ -19,6 +19,7 @@ add_executable(display
 target_link_libraries(display 
     pico_stdlib
     hardware_spi
+    hardware_dma
 )
 
 pico_enable_stdio_usb(display 1)

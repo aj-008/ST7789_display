@@ -1,6 +1,7 @@
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 #include "hardware/gpio.h"
+#include "hardware/dma.h"
 #include "pico/time.h"
 
 // RGB LED pins
@@ -40,6 +41,15 @@
 #define ST7789_RAMWR  0x2C
 #define ST7789_COLMOD 0x3A
 #define ST7789_MADCTL 0x36
+
+
+
+
+int dma_channel;
+
+
+
+
 
 void spi_write_command(uint8_t cmd) {
     gpio_put(PIN_DC, 0); 
@@ -110,7 +120,7 @@ void draw_pixel(uint16_t x, uint16_t y, uint16_t color) {
 
 void display_spi_init() {
     spi_inst_t *spi = spi0; 
-    uint baudrate = 1000 * 1000; 
+    uint baudrate = 1000 * 1000 * 64; 
 
     spi_init(spi, baudrate);
 
@@ -127,6 +137,46 @@ void display_spi_init() {
     
     gpio_init(PIN_CS);
     gpio_set_dir(PIN_CS, GPIO_OUT);
+    gpio_put(PIN_CS, 1);
+}
+
+void display_dma_init() {
+    dma_channel = dma_claim_unused_channel(true);
+
+    dma_channel_config c = dma_channel_get_default_config(dma_channel);
+
+    channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
+    channel_config_set_dreq(&c, DREQ_SPI0_TX);  
+    channel_config_set_read_increment(&c, true);
+    channel_config_set_write_increment(&c, false);
+    
+
+    dma_channel_configure(
+        dma_channel,
+        &c,
+        &spi_get_hw(SPI_PORT)->dr,             
+        NULL,                      
+        0,                         
+        false                      
+    );
+}
+
+void start_display_transfer(uint16_t* data_buffer, size_t num_pixels) {
+    gpio_put(PIN_CS, 0);  
+    gpio_put(PIN_DC, 1); 
+
+    dma_channel_wait_for_finish_blocking(dma_channel);
+
+    dma_channel_set_read_addr(dma_channel, data_buffer, true);
+    dma_channel_set_trans_count(dma_channel, num_pixels * 2, true);
+
+    dma_channel_wait_for_finish_blocking(dma_channel);
+
+    while (spi_is_busy(SPI_PORT)) {
+        tight_loop_contents();
+    }
+    
+
     gpio_put(PIN_CS, 1);
 }
 
