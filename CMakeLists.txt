@@ -15,9 +15,9 @@ add_executable(display
     src/main.c
     src/ST7789/hardware_init.c
     src/graphics/util.c
-    src/graphics/fonts.c
-    src/graphics/bitmap.c
-    src/graphics/midnight.c
+    src/graphics/text.c
+    src/graphics/image.c
+    src/graphics/shapes.c
 )
 
 target_link_libraries(display 

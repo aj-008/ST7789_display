@@ -1,7 +1,8 @@
 #include "ST7789/hardware.h"
 #include "graphics/util.h"
-#include "graphics/fonts.h"
-#include "graphics/bitmap.h"
+#include "graphics/text.h"
+#include "graphics/shapes.h"
+#include "graphics/image.h"
 
 
 int main() { 
@@ -18,12 +19,14 @@ int main() {
 
     fill_screen(black);
 
+    //draw_line(0, 0, 170, 120, red);
+
     /*fill_rectangle(50, 95, 150, 50, red);
 
     fill_circle(50, 95, 25, red);
     fill_circle(50, 140, 25, red);
 
-    fill_circle(200, 120, 25, red);
+    fill_circle(200, 119, 25, red);
 
     sleep_ms(500);
 
@@ -43,5 +46,7 @@ int main() {
 
     sleep_ms(500);*/
 
-    draw_bmp_rotated(0, 0, midnight_bmp, 90);
+    draw_text(0, 30, 16, red, "IM A GOOFY GOOBER, YEAH!!");
+
+    //draw_bmp(0, 0, midnight_bmp, 90);
 }
