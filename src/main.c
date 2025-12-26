@@ -1,6 +1,7 @@
 #include "ST7789/hardware.h"
 #include "graphics/util.h"
 #include "graphics/fonts.h"
+#include "graphics/bitmap.h"
 
 
 int main() { 
@@ -17,7 +18,7 @@ int main() {
 
     fill_screen(black);
 
-    fill_rectangle(50, 95, 150, 50, red);
+    /*fill_rectangle(50, 95, 150, 50, red);
 
     fill_circle(50, 95, 25, red);
     fill_circle(50, 140, 25, red);
@@ -39,4 +40,8 @@ int main() {
     sleep_ms(500);
 
     draw_text(0, 30, 16, red, "penis.");
+
+    sleep_ms(500);*/
+
+    draw_bmp_rotated(0, 0, midnight_bmp, 90);
 }
