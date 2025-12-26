@@ -4,17 +4,6 @@
 #include "hardware/dma.h"
 #include "pico/time.h"
 
-// RGB LED pins
-#define LED_R 6
-#define LED_G 7
-#define LED_B 8
-
-// Button pins
-#define BUTTON_A 12
-#define BUTTON_B 13
-#define BUTTON_X 14
-#define BUTTON_Y 15
-
 // Display dimensions
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
@@ -44,11 +33,7 @@
 
 
 
-
 int dma_channel;
-
-
-
 
 
 void spi_write_command(uint8_t cmd) {
@@ -64,8 +49,6 @@ void spi_write_data(uint8_t *data, size_t length) {
     spi_write_blocking(SPI_PORT, data, length);
     gpio_put(PIN_CS, 1); 
 }
-
-
 
 
 void set_address_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
@@ -88,35 +71,6 @@ void set_address_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
     spi_write_command(ST7789_RAMWR); // Write to RAM
 }
 
-/**
- * @brief Converts R, G, B (0-255) to 16-bit RGB565 format.
- */
-uint16_t color565(uint8_t r, uint8_t g, uint8_t b) {
-    return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
-}
-
-/**
- * @brief Draws a single pixel at specified coordinates (x, y) with a given color.
- */
-void draw_pixel(uint16_t x, uint16_t y, uint16_t color) {
-    // Ensure coordinates are within bounds
-    if (x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT) {
-        return;
-    }
-
-    set_address_window(x, y, x, y);
-
-    // The ST7789 expects big-endian RGB565 data.
-    // The Pico is little-endian, so we need to swap bytes.
-    uint8_t high_byte = (color >> 8) & 0xFF;
-    uint8_t low_byte = color & 0xFF;
-    uint8_t pixel_bytes[2] = {high_byte, low_byte}; // Correct byte order for the display
-
-    // Send the 16-bit color data
-    spi_write_data(pixel_bytes, 2);
-}
-
-
 
 void display_spi_init() {
     spi_inst_t *spi = spi0; 
@@ -135,9 +89,7 @@ void display_spi_init() {
     gpio_set_function(PIN_SCK, GPIO_FUNC_SPI);
     gpio_set_function(PIN_MOSI, GPIO_FUNC_SPI);
     
-    gpio_init(PIN_CS);
-    gpio_set_dir(PIN_CS, GPIO_OUT);
-    gpio_put(PIN_CS, 1);
+
 }
 
 void display_dma_init() {
@@ -210,9 +162,7 @@ void st7789_init() {
     spi_write_command(ST7789_DISPON); 
     sleep_ms(100);
 
-    gpio_init(PIN_BL);
-    gpio_set_dir(PIN_BL, GPIO_OUT);
-    gpio_put(PIN_BL, 1);
+
 }
 
 void gpio_pin_init() {
@@ -224,32 +174,11 @@ void gpio_pin_init() {
     gpio_set_dir(PIN_RST, GPIO_OUT);
     gpio_put(PIN_RST, 1);
 
+    gpio_init(PIN_BL);
+    gpio_set_dir(PIN_BL, GPIO_OUT);
+    gpio_put(PIN_BL, 1);
 
-    gpio_init(LED_R);
-    gpio_set_dir(LED_R, GPIO_OUT);
-    gpio_put(LED_R, 1);  
-    
-    gpio_init(LED_G);
-    gpio_set_dir(LED_G, GPIO_OUT);
-    gpio_put(LED_G, 1);  
-    
-    gpio_init(LED_B);
-    gpio_set_dir(LED_B, GPIO_OUT);
-    gpio_put(LED_B, 1);  
-    
-    gpio_init(BUTTON_A);
-    gpio_set_dir(BUTTON_A, GPIO_IN);
-    gpio_pull_up(BUTTON_A);
-    
-    gpio_init(BUTTON_B);
-    gpio_set_dir(BUTTON_B, GPIO_IN);
-    gpio_pull_up(BUTTON_B);
-    
-    gpio_init(BUTTON_X);
-    gpio_set_dir(BUTTON_X, GPIO_IN);
-    gpio_pull_up(BUTTON_X);
-    
-    gpio_init(BUTTON_Y);
-    gpio_set_dir(BUTTON_Y, GPIO_IN);
-    gpio_pull_up(BUTTON_Y);
+    gpio_init(PIN_CS);
+    gpio_set_dir(PIN_CS, GPIO_OUT);
+    gpio_put(PIN_CS, 1);
 }
