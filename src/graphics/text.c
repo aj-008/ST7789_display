@@ -147,22 +147,21 @@ static int wrap_words_fixed16(const char *text, char lines[MAX_LINES][MAX_LINE_C
     return line; 
 }
 
-void draw_quote_centered(const char *quote, uint16_t color)
-{
+void draw_quote_centered(const char *quote, uint16_t color) {
     char lines[MAX_LINES][MAX_LINE_CHARS] = {0};
     int n = wrap_words_fixed16(quote, lines);
 
     int block_h = n * LINE_H;
-    int start_y = (SCREEN_H - block_h) / 2;
+    int start_y = (SCREEN_HEIGHT - block_h) / 2;
 
     for (int i = 0; i < n; i++) {
         int len = (int)strlen(lines[i]);
         int line_w_px = len * FONT_W;
 
-        int x = (SCREEN_W - line_w_px) / 2;
+        int x = (SCREEN_WIDTH - line_w_px) / 2;
         int y = start_y + i * LINE_H;
 
-        draw_text(x, y, color, lines[i]);   
+        draw_text(x, y, 16, color, lines[i]);   
     }
 }
 
