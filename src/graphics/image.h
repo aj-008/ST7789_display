@@ -15,7 +15,8 @@ void draw_bitmap(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h, uint16_t colo
 bool parse_bmp_header(uint8_t *bmp_data, BMP_Header *header);
 uint16_t rgb888_to_rgb565(uint8_t r, uint8_t g, uint8_t b);
 void draw_bmp(uint16_t x0, uint16_t y0, uint8_t *bmp_data, uint16_t rotation);
-
+void draw_bitmap_bg(uint16_t x0, uint16_t y0,uint16_t w, uint16_t h, uint16_t fg, uint16_t bg,
+                    const uint8_t *bitmap);
 
 
 extern const uint8_t midnight_bmp[];

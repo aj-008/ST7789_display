@@ -21,6 +21,22 @@ void draw_bitmap(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h, uint16_t colo
     }
 }
 
+void draw_bitmap_bg(uint16_t x0, uint16_t y0,uint16_t w, uint16_t h, uint16_t fg, uint16_t bg,
+                    const uint8_t *bitmap)
+{
+    uint16_t bytes_per_row = (w + 7) / 8;
+
+    for (uint16_t row = 0; row < h; row++) {
+        for (uint16_t col = 0; col < w; col++) {
+            uint16_t byte_index = row * bytes_per_row + (col / 8);
+            uint8_t  bit_mask   = (1u << (col % 8));
+
+            uint16_t c = (bitmap[byte_index] & bit_mask) ? fg : bg;
+            draw_pixel(x0 + col, y0 + row, c);
+        }
+    }
+}
+
 
 
 
