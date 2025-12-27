@@ -2,7 +2,8 @@
 #include "util.h"
 #include "image.h"
 #include <string.h>
-
+#include <stdint.h>
+#include <stdbool.h>
 
 
 void draw_text(uint16_t x, uint16_t y, uint16_t size, uint16_t color, uint8_t *text) {
@@ -87,6 +88,83 @@ void draw_text_center_bg(uint16_t y, uint16_t size, uint16_t text_color, uint16_
     draw_text_bg(x, y, size, text_color, bg, text);
 }
 
+
+
+
+#define FONT_W 16
+#define FONT_H 16
+#define LINE_H 16          
+
+#define MAX_COLS 16
+#define MAX_LINES 10       
+#define MAX_LINE_CHARS 64  
+
+static int wrap_words_fixed16(const char *text, char lines[MAX_LINES][MAX_LINE_CHARS]) {
+    int line = 0;
+    int col  = 0;
+
+    while (*text && line < MAX_LINES) {
+        while (*text == ' ') text++;
+
+        if (!*text) break;
+
+        const char *word = text;
+        int wlen = 0;
+        while (word[wlen] && word[wlen] != ' ') wlen++;
+
+        if (col > 0 && (col + 1 + wlen) > MAX_COLS) {
+            lines[line][col] = '\0';
+            line++;
+            col = 0;
+            if (line >= MAX_LINES) break;
+        }
+
+        if (col == 0 && wlen > MAX_COLS) {
+            int take = MAX_COLS;
+            memcpy(&lines[line][col], text, (size_t)take);
+            col += take;
+            text += take;
+            lines[line][col] = '\0';
+            line++;
+            col = 0;
+            continue;
+        }
+
+        // add space if needed
+        if (col > 0) lines[line][col++] = ' ';
+
+        // copy word
+        memcpy(&lines[line][col], text, (size_t)wlen);
+        col += wlen;
+        text += wlen;
+    }
+
+    if (line < MAX_LINES && col > 0) {
+        lines[line][col] = '\0';
+        line++;
+    }
+
+    return line; 
+}
+
+void draw_quote_centered(const char *quote, uint16_t color)
+{
+    char lines[MAX_LINES][MAX_LINE_CHARS] = {0};
+    int n = wrap_words_fixed16(quote, lines);
+
+    int block_h = n * LINE_H;
+    int start_y = (SCREEN_H - block_h) / 2;
+
+    for (int i = 0; i < n; i++) {
+        int len = (int)strlen(lines[i]);
+        int line_w_px = len * FONT_W;
+
+        int x = (SCREEN_W - line_w_px) / 2;
+        int y = start_y + i * LINE_H;
+
+        draw_text(x, y, color, lines[i]);   
+    }
+}
 
 
 
