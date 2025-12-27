@@ -84,7 +84,7 @@ void draw_text_center(uint16_t y, uint16_t size, uint16_t color, uint8_t *text) 
 void draw_text_center_bg(uint16_t y, uint16_t size, uint16_t text_color, uint16_t bg, uint8_t *text) {
     uint16_t text_width = strlen((char*)text) * size;
     uint16_t x = (SCREEN_WIDTH - text_width) / 2;
-    draw_text(x, y, size, text_color, bg, color);
+    draw_text_bg(x, y, size, text_color, bg, text);
 }
 
 
