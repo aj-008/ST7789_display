@@ -48,6 +48,21 @@ void fill_screen(uint16_t color) {
 }
 
 
+void fb_put565(uint16_t x, uint16_t y, uint16_t color565_native) {
+    if (x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT) return;
+    framebuffer[y * SCREEN_WIDTH + x] =
+        (uint16_t)((color565_native << 8) | (color565_native >> 8));
+}
+
+void push_scanline_swapped(uint16_t y, const uint16_t *line_swapped, uint16_t len) {
+    if (y >= SCREEN_HEIGHT) return;
+    if (len == 0) return;
+    if (len > SCREEN_WIDTH) len = SCREEN_WIDTH;
+
+    set_address_window(0, y, (uint16_t)(len - 1), y);
+    start_display_transfer((uint16_t *)line_swapped, len);
+}
+
 
 
 

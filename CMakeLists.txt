@@ -12,7 +12,6 @@ pico_sdk_init()
 
 
 add_executable(display
-    src/main.c
     src/ST7789/hardware_init.c
     src/graphics/util.c
     src/graphics/text.c
