@@ -64,5 +64,15 @@ void push_scanline_swapped(uint16_t y, const uint16_t *line_swapped, uint16_t le
 }
 
 
+void push_scanline_swapped_xy(uint16_t x0, uint16_t y, const uint16_t *line_swapped, uint16_t len) {
+    if (y >= SCREEN_HEIGHT) return;
+    if (x0 >= SCREEN_WIDTH) return;
+    if (len == 0) return;
+    if (x0 + len > SCREEN_WIDTH) len = (uint16_t)(SCREEN_WIDTH - x0);
+
+    set_address_window(x0, y, (uint16_t)(x0 + len - 1), y);
+    start_display_transfer((uint16_t *)line_swapped, len);
+}
+
 
 

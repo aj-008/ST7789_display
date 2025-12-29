@@ -114,12 +114,13 @@ void display_dma_init() {
 }
 
 void start_display_transfer(uint16_t* data_buffer, size_t num_pixels) {
-    gpio_put(PIN_CS, 0);  
-    gpio_put(PIN_DC, 1); 
+    gpio_put(PIN_CS, 0);
+    gpio_put(PIN_DC, 1);
 
     dma_channel_wait_for_finish_blocking(dma_channel);
 
-    dma_channel_set_read_addr(dma_channel, data_buffer, true);
+    dma_channel_set_read_addr(dma_channel, data_buffer, false);
+
     dma_channel_set_trans_count(dma_channel, num_pixels * 2, true);
 
     dma_channel_wait_for_finish_blocking(dma_channel);
@@ -127,7 +128,6 @@ void start_display_transfer(uint16_t* data_buffer, size_t num_pixels) {
     while (spi_is_busy(SPI_PORT)) {
         tight_loop_contents();
     }
-    
 
     gpio_put(PIN_CS, 1);
 }
