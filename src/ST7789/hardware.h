@@ -1,18 +1,62 @@
+/**************************************************************
+ *
+ *                     hardware.h
+ *
+ *     Assignment: ST7789_display
+ *     Author:    AJ Romeo
+ *     Date:      December 30, 2025
+ *
+ *     Public interface for the ST7789 display driver hardware layer.
+ *
+ **************************************************************/
+
 #ifndef HARDWARE_H
 #define HARDWARE_H
 
-#include "pico/stdlib.h"
+#include <stddef.h>
+#include <stdint.h>
 
-#define SCREEN_WIDTH 320
-#define SCREEN_HEIGHT 240
+#include "../display_config.h"
 
-void spi_write_command(uint8_t cmd);
-void spi_write_data(uint8_t *data, size_t length);
-void set_address_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
-void display_spi_init();
-void st7789_init();
-void gpio_pin_init();
-void display_dma_init();
-void start_display_transfer(uint16_t* data_buffer, size_t num_pixels);
+/*
+ * Pin defaults (Pico SDK GPIO numbers).
+ *
+ * Override at build time, for example:
+ *      -DST7789_PIN_CS=5
+ */
+#ifndef ST7789_PIN_SCK
+#define ST7789_PIN_SCK  18
+#endif
+
+#ifndef ST7789_PIN_MOSI
+#define ST7789_PIN_MOSI 19
+#endif
+
+#ifndef ST7789_PIN_CS
+#define ST7789_PIN_CS   17
+#endif
+
+#ifndef ST7789_PIN_DC
+#define ST7789_PIN_DC   16
+#endif
+
+#ifndef ST7789_PIN_RST
+#define ST7789_PIN_RST  20
+#endif
+
+#ifndef ST7789_PIN_BL
+#define ST7789_PIN_BL   21
+#endif
+
+#ifndef ST7789_SPI_PORT
+#define ST7789_SPI_PORT spi0
+#endif
+
+void st7789_init(void);
+
+void set_address_window(uint16_t x0, uint16_t y0,
+                        uint16_t x1, uint16_t y1);
+
+void start_display_transfer(const uint16_t *data, size_t count);
 
 #endif
