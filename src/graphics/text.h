@@ -10,5 +10,6 @@ void draw_text_center(uint16_t y, uint16_t size, uint16_t color, uint8_t *text);
 void draw_text_center_bg(uint16_t y, uint16_t size, uint16_t text_color, uint16_t bg, uint8_t *text);
 void draw_text_center(uint16_t y, uint16_t size, uint16_t color, uint8_t *text);
 extern const uint8_t CGA16[];
+extern const uint8_t jmk32[];
 
 #endif
