@@ -20,5 +20,6 @@ void draw_hline(uint16_t x, uint16_t y, uint16_t length, uint16_t color);
 void fb_put565(uint16_t x, uint16_t y, uint16_t color565_native);
 void push_scanline_swapped(uint16_t y, const uint16_t *line_swapped, uint16_t len);
 void push_scanline_swapped_xy(uint16_t x0, uint16_t y, const uint16_t *line_swapped, uint16_t len);
+void push_rect_fb(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
 #endif

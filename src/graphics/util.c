@@ -75,4 +75,17 @@ void push_scanline_swapped_xy(uint16_t x0, uint16_t y, const uint16_t *line_swap
 }
 
 
+void push_rect_fb(uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
+    if (w == 0 || h == 0) return;
+    if (x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT) return;
 
+    if (x + w > SCREEN_WIDTH)  w = (uint16_t)(SCREEN_WIDTH - x);
+    if (y + h > SCREEN_HEIGHT) h = (uint16_t)(SCREEN_HEIGHT - y);
+
+    set_address_window(x, y, (uint16_t)(x + w - 1), (uint16_t)(y + h - 1));
+
+    for (uint16_t row = 0; row < h; row++) {
+        uint16_t *row_ptr = &framebuffer[(y + row) * SCREEN_WIDTH + x];
+        start_display_transfer(row_ptr, w);
+    }
+}
