@@ -51,6 +51,8 @@ void draw_text(uint16_t x, uint16_t y, uint16_t size, uint16_t color, uint8_t *t
 }
 
 
+
+
 void draw_text_bg(uint16_t x, uint16_t y, uint16_t size, uint16_t fg, uint16_t bg,
                   const char *text)
 {
@@ -80,6 +82,42 @@ void draw_text_bg(uint16_t x, uint16_t y, uint16_t size, uint16_t fg, uint16_t b
         }
         if (y_curr >= SCREEN_HEIGHT - size) return;
 
+        char ch = text[i];
+        if (ch < ' ' || ch > '~') ch = '?';  // guard
+
+        uint16_t target = (size * size >> 3) * (uint16_t)(ch - ' ');
+        const uint8_t *draw_char = font + target;
+
+        draw_bitmap_bg(x_curr, y_curr, size, size, fg, bg, draw_char);
+
+        x_curr += size;
+    }
+}
+
+
+void draw_text_bg_unwrapped(uint16_t x, uint16_t y, uint16_t size, uint16_t fg, uint16_t bg,
+                  const char *text)
+{
+    const uint8_t *font;
+    uint16_t x_curr = x;
+    uint16_t y_curr = y;
+
+    switch (size) {
+        case 16:
+            font = CGA16;
+            break;
+        case 32:
+            font = jmk32;
+            break;
+         case 48:
+            font = big48;
+            break;      
+         default:
+            font = CGA16;
+            break;
+    }
+
+    for (uint16_t i = 0; text[i] != '\0'; i++) {
         char ch = text[i];
         if (ch < ' ' || ch > '~') ch = '?';  // guard
 
