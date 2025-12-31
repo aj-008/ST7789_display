@@ -1,10 +1,8 @@
 /**************************************************************
  *
- *                     shapes.c
+ *                          shapes.c
  *
- *     Assignment: ST7789_display
- *     Author:    AJ Romeo
- *     Date:      December 30, 2025
+ *     Author:  AJ Romeo
  *
  *     Implementations of basic 2D shapes (lines, circles, rectangles).
  *
@@ -14,16 +12,29 @@
 #include "util.h"
 #include <stdlib.h>
 
-
+/********** draw_circle ********
+ *
+ * Draw a circle outline on the framebuffer.
+ *
+ * Parameters:
+ *      xc, yc: center coordinates
+ *      r:      radius in pixels
+ *      color:  line color in native-endian RGB565
+ *
+ ************************/
 void draw_circle(uint16_t xc, uint16_t yc, uint16_t r, uint16_t color)
 {
-        int16_t d, dx, dy, x, y;
+        int16_t d = 1 - r;
+        int16_t dx = 1;
+        int16_t dy = -2 * r;
+        int16_t x = 0;
+        int16_t y = r;
 
-        d = 1 - r, dx = 1, dy = -2 * r, x = 0, y = r;
         draw_pixel(xc, yc + r, color);
         draw_pixel(xc, yc - r, color);
         draw_pixel(xc + r, yc, color);
         draw_pixel(xc - r, yc, color);
+
         while (x < y) {
                 if (d >= 0) {
                         y--;
@@ -33,6 +44,7 @@ void draw_circle(uint16_t xc, uint16_t yc, uint16_t r, uint16_t color)
                 x++;
                 dx += 2;
                 d += dx;
+
                 draw_pixel(xc + x, yc + y, color);
                 draw_pixel(xc - x, yc + y, color);
                 draw_pixel(xc + x, yc - y, color);
@@ -42,26 +54,30 @@ void draw_circle(uint16_t xc, uint16_t yc, uint16_t r, uint16_t color)
                 draw_pixel(xc + y, yc - x, color);
                 draw_pixel(xc - y, yc - x, color);
         }
-
 }
 
-
-/*
- * 1 ---------- 2
- * |            |
- * |            |
- * 4 ---------- 3
- */
-static void draw_corner_round(uint16_t x0, uint16_t y0, uint16_t r, 
+/********** draw_corner_round ********
+ *
+ * Draw one quadrant of a circle for rounded rectangle corners.
+ *
+ * Parameters:
+ *      x0, y0: center of the corner arc
+ *      r:      radius in pixels
+ *      corner: which corner (1-4, clockwise from top-left)
+ *      color:  line color in native-endian RGB565
+ *
+ ************************/
+static void draw_corner_round(uint16_t x0, uint16_t y0, uint16_t r,
                               uint16_t corner, uint16_t color)
 {
+        int16_t f = 1 - r;
+        int16_t dx = 1;
+        int16_t dy = -2 * r;
+        int16_t x = 0;
+        int16_t y = r;
 
-        int16_t f, dx, dy, x, y;
-        f = 1 - r, dx = 1, dy = -2 * r, x = 0, y = r;
-        while (x < y)
-        {
-                if (f >= 0)
-                {
+        while (x < y) {
+                if (f >= 0) {
                         y--;
                         dy += 2;
                         f += dy;
@@ -69,6 +85,7 @@ static void draw_corner_round(uint16_t x0, uint16_t y0, uint16_t r,
                 x++;
                 dx += 2;
                 f += dx;
+
                 if (corner == 1) {
                         draw_pixel(x0 + x, y0 + y, color);
                         draw_pixel(x0 + y, y0 + x, color);
@@ -88,7 +105,16 @@ static void draw_corner_round(uint16_t x0, uint16_t y0, uint16_t r,
         }
 }
 
-/*x and y are center coords*/
+/********** fill_circle ********
+ *
+ * Draw a filled circle on the framebuffer.
+ *
+ * Parameters:
+ *      xc, yc: center coordinates
+ *      r:      radius in pixels
+ *      color:  fill color in native-endian RGB565
+ *
+ ************************/
 void fill_circle(uint16_t xc, uint16_t yc, uint16_t r, uint16_t color)
 {
         int16_t x = 0;
@@ -116,12 +142,19 @@ void fill_circle(uint16_t xc, uint16_t yc, uint16_t r, uint16_t color)
         }
 }
 
-
-/*x and y desigate the top left*/
+/********** draw_rectangle ********
+ *
+ * Draw a rectangle outline on the framebuffer.
+ *
+ * Parameters:
+ *      x, y:  top-left corner
+ *      w, h:  width and height in pixels
+ *      color: line color in native-endian RGB565
+ *
+ ************************/
 void draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h,
                     uint16_t color)
 {
-
         for (uint16_t i = 0; i < w; i++) {
                 draw_pixel(x + i, y, color);
                 draw_pixel(x + i, y + h, color);
@@ -132,11 +165,19 @@ void draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h,
         }
 }
 
-
+/********** fill_rectangle ********
+ *
+ * Draw a filled rectangle on the framebuffer.
+ *
+ * Parameters:
+ *      x, y:  top-left corner
+ *      w, h:  width and height in pixels
+ *      color: fill color in native-endian RGB565
+ *
+ ************************/
 void fill_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h,
                     uint16_t color)
 {
-
         for (uint16_t i = x; i < w + x; i++) {
                 for (uint16_t j = y; j < h + y; j++) {
                         draw_pixel(i, j, color);
@@ -144,6 +185,16 @@ void fill_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h,
         }
 }
 
+/********** draw_hline ********
+ *
+ * Draw a horizontal line on the framebuffer.
+ *
+ * Parameters:
+ *      x, y:   starting point
+ *      length: line length in pixels
+ *      color:  line color in native-endian RGB565
+ *
+ ************************/
 void draw_hline(uint16_t x, uint16_t y, uint16_t length, uint16_t color)
 {
         for (uint16_t i = x; i < x + length; i++) {
@@ -151,7 +202,16 @@ void draw_hline(uint16_t x, uint16_t y, uint16_t length, uint16_t color)
         }
 }
 
-
+/********** draw_vline ********
+ *
+ * Draw a vertical line on the framebuffer.
+ *
+ * Parameters:
+ *      x, y:   starting point
+ *      length: line length in pixels
+ *      color:  line color in native-endian RGB565
+ *
+ ************************/
 void draw_vline(uint16_t x, uint16_t y, uint16_t length, uint16_t color)
 {
         for (uint16_t i = y; i < y + length; i++) {
@@ -174,7 +234,6 @@ void draw_vline(uint16_t x, uint16_t y, uint16_t length, uint16_t color)
  ************************/
 void draw_line(int x0, int y0, int x1, int y1, uint16_t color)
 {
-
         int16_t dx = abs((int16_t)x1 - (int16_t)x0);
         int16_t dy = abs((int16_t)y1 - (int16_t)y0);
         int16_t sx = x0 < x1 ? 1 : -1;
@@ -187,7 +246,9 @@ void draw_line(int x0, int y0, int x1, int y1, uint16_t color)
         while (true) {
                 draw_pixel(x, y, color);
 
-                if (x == x1 && y == y1) break;
+                if (x == x1 && y == y1) {
+                        break;
+                }
 
                 int16_t e2 = 2 * err;
 
@@ -203,30 +264,28 @@ void draw_line(int x0, int y0, int x1, int y1, uint16_t color)
         }
 }
 
-
 /********** draw_rounded_rec ********
  *
  * Draw an outline rectangle with rounded corners.
  *
  * Parameters:
- *      x, y:     top-left corner
- *      w, h:     width and height in pixels
- *      radius:   corner radius in pixels
- *      color:    outline color in native-endian RGB565
+ *      x, y:   top-left corner
+ *      w, h:   width and height in pixels
+ *      radius: corner radius in pixels
+ *      color:  outline color in native-endian RGB565
  *
  ************************/
-
 void draw_rounded_rec(uint16_t x, uint16_t y, uint16_t w, uint16_t h,
                       uint16_t radius, uint16_t color)
 {
-
-        draw_hline(x + r, y, w - 2 * r, color);
-        draw_hline(x + r, y + h - 1, w - 2 * r, color);
-        draw_vline(x, y + r, h - 2 * r, color);
-        draw_vline(x + w - 1, y + r, h - 2 * r, color);
-        draw_corner_round(x + r, y + r, r, 4, color);
-        draw_corner_round(x + w - r - 1, y + r, r, 2, color);
-        draw_corner_round(x + w - r - 1, y + h - r - 1, r, 1, color);
-        draw_corner_round(x + r, y + h - r - 1, r, 3, color);
+        draw_hline(x + radius, y, w - 2 * radius, color);
+        draw_hline(x + radius, y + h - 1, w - 2 * radius, color);
+        draw_vline(x, y + radius, h - 2 * radius, color);
+        draw_vline(x + w - 1, y + radius, h - 2 * radius, color);
+        draw_corner_round(x + radius, y + radius, radius, 4, color);
+        draw_corner_round(x + w - radius - 1, y + radius, radius, 2, color);
+        draw_corner_round(x + w - radius - 1, y + h - radius - 1, 
+                          radius, 1, color);
+        draw_corner_round(x + radius, y + h - radius - 1, radius, 3, color);
 }
 

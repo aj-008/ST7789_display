@@ -1,23 +1,19 @@
 /**************************************************************
  *
- *                     hardware_init.c
+ *                          hardware_init.c
  *
- *     Assignment: ST7789_display
- *     Author:    AJ Romeo
- *     Date:      December 30, 2025
+ *     Author:  AJ Romeo
  *
  *     ST7789 SPI transport and initialization for RP2040 + Pico SDK.
  *
  **************************************************************/
 
 #include "hardware.h"
-
 #include "hardware/dma.h"
 #include "hardware/gpio.h"
 #include "hardware/spi.h"
 #include "pico/time.h"
 
-/*ST7789 commands*/
 #define ST7789_SWRST  0x01
 #define ST7789_SLPOUT 0x11
 #define ST7789_INVON  0x21
@@ -30,6 +26,14 @@
 
 static int dma_channel = -1;
 
+/********** spi_write_command ********
+ *
+ * Send a single command byte to the ST7789.
+ *
+ * Parameters:
+ *      cmd: command byte
+ *
+ ************************/
 void spi_write_command(uint8_t cmd)
 {
         gpio_put(ST7789_PIN_DC, 0);
@@ -38,9 +42,20 @@ void spi_write_command(uint8_t cmd)
         gpio_put(ST7789_PIN_CS, 1);
 }
 
+/********** spi_write_data ********
+ *
+ * Send data bytes to the ST7789.
+ *
+ * Parameters:
+ *      data:   pointer to data buffer
+ *      length: number of bytes to send
+ *
+ ************************/
 void spi_write_data(const uint8_t *data, size_t length)
 {
-        if (length == 0) return;
+        if (length == 0) {
+                return;
+        }
 
         gpio_put(ST7789_PIN_DC, 1);
         gpio_put(ST7789_PIN_CS, 0);
@@ -78,6 +93,14 @@ void set_address_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
         spi_write_command(ST7789_RAMWR);
 }
 
+/********** display_spi_init ********
+ *
+ * Initialize the SPI peripheral for ST7789 communication.
+ *
+ * Notes:
+ *      Configures SPI to 64 MHz, 8-bit transfers, mode 0, MSB first.
+ *
+ ************************/
 void display_spi_init(void)
 {
         const uint baudrate = 1000u * 1000u * 64u;
@@ -89,6 +112,14 @@ void display_spi_init(void)
         gpio_set_function(ST7789_PIN_MOSI, GPIO_FUNC_SPI);
 }
 
+/********** display_dma_init ********
+ *
+ * Initialize DMA for pixel data transfers to the display.
+ *
+ * Notes:
+ *      Claims a DMA channel and configures it for SPI TX transfers.
+ *
+ ************************/
 void display_dma_init(void)
 {
         dma_channel = dma_claim_unused_channel(true);
@@ -99,14 +130,9 @@ void display_dma_init(void)
         channel_config_set_read_increment(&c, true);
         channel_config_set_write_increment(&c, false);
 
-        dma_channel_configure(
-        dma_channel,
-        &c,
-        &spi_get_hw(ST7789_SPI_PORT)->dr,
-        NULL,
-        0,
-        false
-        );
+        dma_channel_configure(dma_channel, &c,
+                              &spi_get_hw(ST7789_SPI_PORT)->dr,
+                              NULL, 0, false);
 }
 
 /********** start_display_transfer ********
@@ -114,18 +140,22 @@ void display_dma_init(void)
  * Begin a DMA-backed SPI transfer of pixel data to the display.
  *
  * Parameters:
- *      data:   pointer to RGB565 pixel data (byte order must match the driver)
- *      count:  number of pixels to transfer
+ *      data_buffer: pointer to RGB565 pixel data (byte-swapped)
+ *      num_pixels:  number of pixels to transfer
  *
  * Notes:
  *      The caller must set an appropriate address window before calling.
+ *      This function blocks until the transfer completes.
  *
  ************************/
-
 void start_display_transfer(const uint16_t *data_buffer, size_t num_pixels)
 {
-        if (num_pixels == 0) return;
-        if (dma_channel < 0) return;
+        if (num_pixels == 0) {
+                return;
+        }
+        if (dma_channel < 0) {
+                return;
+        }
 
         gpio_put(ST7789_PIN_CS, 0);
         gpio_put(ST7789_PIN_DC, 1);
@@ -144,47 +174,15 @@ void start_display_transfer(const uint16_t *data_buffer, size_t num_pixels)
         gpio_put(ST7789_PIN_CS, 1);
 }
 
-
-/********** st7789_init ********
+/********** gpio_pin_init ********
  *
- * Initialize SPI, GPIO, DMA, and the ST7789 controller.
+ * Initialize GPIO pins for ST7789 control signals.
  *
  * Notes:
- *      Must be called before any drawing is presented to the display.
- *      Uses the pin configuration in hardware.h (overridable at build time).
+ *      Configures DC, RST, BL, and CS pins as outputs and sets their initial
+ *      states.
  *
  ************************/
-
-void st7789_init(void)
-{
-        uint8_t data[1];
-
-        gpio_put(ST7789_PIN_RST, 0);
-        sleep_ms(20);
-        gpio_put(ST7789_PIN_RST, 1);
-        sleep_ms(150);
-
-        spi_write_command(ST7789_SWRST);
-        sleep_ms(150);
-
-        spi_write_command(ST7789_SLPOUT);
-        sleep_ms(500);
-
-        spi_write_command(ST7789_COLMOD);
-        data[0] = 0x55; /* 16bpp (RGB565) */
-        spi_write_data(data, 1);
-        sleep_ms(10);
-
-        spi_write_command(ST7789_MADCTL);
-        data[0] = 0x60; /* row/col order + RGB/BGR */
-        spi_write_data(data, 1);
-
-        spi_write_command(ST7789_INVON);
-
-        spi_write_command(ST7789_DISPON);
-        sleep_ms(100);
-}
-
 void gpio_pin_init(void)
 {
         gpio_init(ST7789_PIN_DC);
@@ -203,3 +201,44 @@ void gpio_pin_init(void)
         gpio_set_dir(ST7789_PIN_CS, GPIO_OUT);
         gpio_put(ST7789_PIN_CS, 1);
 }
+
+/********** st7789_init ********
+ *
+ * Initialize SPI, GPIO, DMA, and the ST7789 controller.
+ *
+ * Notes:
+ *      Must be called before any drawing is presented to the display.
+ *      Uses the pin configuration in hardware.h (overridable at build time).
+ *      Configures the display for RGB565 color mode.
+ *
+ ************************/
+void st7789_init(void)
+{
+        uint8_t data[1];
+
+        gpio_put(ST7789_PIN_RST, 0);
+        sleep_ms(20);
+        gpio_put(ST7789_PIN_RST, 1);
+        sleep_ms(150);
+
+        spi_write_command(ST7789_SWRST);
+        sleep_ms(150);
+
+        spi_write_command(ST7789_SLPOUT);
+        sleep_ms(500);
+
+        spi_write_command(ST7789_COLMOD);
+        data[0] = 0x55;
+        spi_write_data(data, 1);
+        sleep_ms(10);
+
+        spi_write_command(ST7789_MADCTL);
+        data[0] = 0x60;
+        spi_write_data(data, 1);
+
+        spi_write_command(ST7789_INVON);
+
+        spi_write_command(ST7789_DISPON);
+        sleep_ms(100);
+}
+

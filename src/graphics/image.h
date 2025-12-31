@@ -1,10 +1,8 @@
 /**************************************************************
  *
- *                     image.h
+ *                          image.h
  *
- *     Assignment: ST7789_display
- *     Author:    AJ Romeo
- *     Date:      December 30, 2025
+ *     Author:  AJ Romeo
  *
  *     Bitmap and BMP image drawing interface.
  *
@@ -16,21 +14,21 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-void draw_bitmap(uint16_t x0, uint16_t y0,
-                 uint16_t w, uint16_t h,
-                 uint16_t color,
-                 const uint8_t *bitmap);
+typedef struct {
+        uint32_t data_offset;
+        uint32_t width;
+        uint32_t height;
+        uint16_t bpp;
+} BMP_Header;
 
-void draw_bitmap_bg(uint16_t x0, uint16_t y0,
-                    uint16_t w, uint16_t h,
-                    uint16_t fg, uint16_t bg,
-                    const uint8_t *bitmap);
+void draw_bitmap(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h,
+                 uint16_t color, const uint8_t *bitmap);
 
-/*
- * Draw a BMP stored in memory. The data must begin with the BMP file header.
- */
-void draw_bmp(uint16_t x0, uint16_t y0,
-              const uint8_t *bmp_data,
+void draw_bitmap_bg(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h,
+                    uint16_t fg, uint16_t bg, const uint8_t *bitmap);
+
+void draw_bmp(uint16_t x0, uint16_t y0, const uint8_t *bmp_data,
               uint16_t rotation);
 
 #endif
+

@@ -1,10 +1,8 @@
 /**************************************************************
  *
- *                     hardware.h
+ *                          hardware.h
  *
- *     Assignment: ST7789_display
- *     Author:    AJ Romeo
- *     Date:      December 30, 2025
+ *     Author:  AJ Romeo
  *
  *     Public interface for the ST7789 display driver hardware layer.
  *
@@ -15,14 +13,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include "../display_config.h"
 
 /*
  * Pin defaults (Pico SDK GPIO numbers).
- *
- * Override at build time, for example:
- *      -DST7789_PIN_CS=5
+ * Override at build time, for example: -DST7789_PIN_CS=5
  */
 #ifndef ST7789_PIN_SCK
 #define ST7789_PIN_SCK  18
@@ -52,11 +47,17 @@
 #define ST7789_SPI_PORT spi0
 #endif
 
+void display_spi_init(void);
+
+void gpio_pin_init(void);
+
+void display_dma_init(void);
+
 void st7789_init(void);
 
-void set_address_window(uint16_t x0, uint16_t y0,
-                        uint16_t x1, uint16_t y1);
+void set_address_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 
 void start_display_transfer(const uint16_t *data, size_t count);
 
 #endif
+

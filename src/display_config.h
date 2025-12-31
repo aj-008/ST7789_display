@@ -1,10 +1,8 @@
 /**************************************************************
  *
- *                     display_config.h
+ *                          display_config.h
  *
- *     Assignment: ST7789_display
- *     Author:    AJ Romeo
- *     Date:      December 30, 2025
+ *     Author:  AJ Romeo
  *
  *     Project-wide display geometry configuration (width/height).
  *
@@ -15,9 +13,7 @@
 
 /*
  * Default panel size.
- *
- * Override at build time with:
- *      -DSCREEN_WIDTH=... -DSCREEN_HEIGHT=...
+ * Override at build time with: -DSCREEN_WIDTH=... -DSCREEN_HEIGHT=...
  */
 #ifndef SCREEN_WIDTH
 #define SCREEN_WIDTH 320
@@ -28,3 +24,4 @@
 #endif
 
 #endif
+

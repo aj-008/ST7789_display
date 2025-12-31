@@ -1,10 +1,8 @@
 /**************************************************************
  *
- *                     util.h
+ *                          util.h
  *
- *     Assignment: ST7789_display
- *     Author:    AJ Romeo
- *     Date:      December 30, 2025
+ *     Author:  AJ Romeo
  *
  *     Framebuffer utilities and low-level drawing/present helpers.
  *
@@ -15,7 +13,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include "../display_config.h"
 
 /*
@@ -30,28 +27,17 @@ void draw_pixel(uint16_t x, uint16_t y, uint16_t color);
 
 void present_full(void);
 
-void present_rect(uint16_t x, uint16_t y,
-                  uint16_t w, uint16_t h);
+void present_rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
 void fill_screen(uint16_t color);
 
-void fill_screen_rect(uint16_t x, uint16_t y,
-                      uint16_t w, uint16_t h,
-                      uint16_t color);
-
-/*
- * Push helpers for pre-byte-swapped pixel data (RGB565 big-endian).
- * These are useful when the caller already has swapped scanlines/rectangles.
- */
-void push_scanline_swapped(uint16_t y,
-                           const uint16_t *line_swapped,
+void push_scanline_swapped(uint16_t y, const uint16_t *line_swapped,
                            uint16_t len);
 
 void push_scanline_swapped_xy(uint16_t x0, uint16_t y,
-                              const uint16_t *line_swapped,
-                              uint16_t len);
+                              const uint16_t *line_swapped, uint16_t len);
 
-void push_rect_fb(uint16_t x, uint16_t y,
-                  uint16_t w, uint16_t h);
+void push_rect_fb(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
 #endif
+

@@ -1,10 +1,8 @@
 /**************************************************************
  *
- *                     image.c
+ *                          image.c
  *
- *     Assignment: ST7789_display
- *     Author:    AJ Romeo
- *     Date:      December 30, 2025
+ *     Author:  AJ Romeo
  *
  *     Bitmap and BMP rendering routines.
  *
@@ -14,9 +12,6 @@
 #include "pico/stdio.h"
 #include <stdio.h>
 #include "util.h"
-
-
-
 
 /********** draw_bitmap ********
  *
@@ -32,7 +27,6 @@
 void draw_bitmap(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h,
                  uint16_t color, const uint8_t *bitmap)
 {
-
         uint16_t bytes_per_row = (w + 7) / 8;
 
         for (uint16_t row = 0; row < h; row++) {
@@ -47,32 +41,40 @@ void draw_bitmap(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h,
         }
 }
 
+/********** draw_bitmap_bg ********
+ *
+ * Draw a 1bpp bitmap with foreground and background colors.
+ *
+ * Parameters:
+ *      x0, y0: top-left destination in pixels
+ *      w, h:   bitmap dimensions in pixels
+ *      fg:     foreground color in native-endian RGB565
+ *      bg:     background color in native-endian RGB565
+ *      bitmap: bitmap bits, row-major, MSB-first within each byte
+ *
+ ************************/
 void draw_bitmap_bg(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h,
                     uint16_t fg, uint16_t bg, const uint8_t *bitmap)
 {
-
         uint16_t bytes_per_row = (w + 7) / 8;
 
         for (uint16_t row = 0; row < h; row++) {
                 for (uint16_t col = 0; col < w; col++) {
                         uint16_t byte_index = row * bytes_per_row + (col / 8);
-                        uint8_t  bit_mask   = (1u << (col % 8));
-
+                        uint8_t bit_mask = (1u << (col % 8));
                         uint16_t c = (bitmap[byte_index] & bit_mask) ? fg : bg;
                         draw_pixel(x0 + col, y0 + row, c);
                 }
         }
 }
 
-
-
 /********** parse_bmp_header ********
  *
  * Read and validate the BMP header fields needed for draw_bmp().
  *
  * Parameters:
- *      fp:      open FILE positioned at the start of the BMP
- *      hdr_out: output header structure
+ *      bmp_data: pointer to BMP file data in memory
+ *      header:   output header structure
  *
  * Return:
  *      true if the header is recognized and supported; false otherwise.
@@ -80,41 +82,48 @@ void draw_bitmap_bg(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h,
  ************************/
 bool parse_bmp_header(const uint8_t *bmp_data, BMP_Header *header)
 {
-
         if (bmp_data[0] != 'B' || bmp_data[1] != 'M') {
                 return false;
         }
 
         header->data_offset = bmp_data[10] | (bmp_data[11] << 8) |
-        (bmp_data[12] << 16) | (bmp_data[13] << 24);
+                              (bmp_data[12] << 16) | (bmp_data[13] << 24);
 
         header->width = bmp_data[18] | (bmp_data[19] << 8) |
-        (bmp_data[20] << 16) | (bmp_data[21] << 24);
+                        (bmp_data[20] << 16) | (bmp_data[21] << 24);
 
         header->height = bmp_data[22] | (bmp_data[23] << 8) |
-        (bmp_data[24] << 16) | (bmp_data[25] << 24);
+                         (bmp_data[24] << 16) | (bmp_data[25] << 24);
 
         header->bpp = bmp_data[28] | (bmp_data[29] << 8);
-
 
         return true;
 }
 
+/********** rgb888_to_rgb565 ********
+ *
+ * Convert 24-bit RGB to 16-bit RGB565 format.
+ *
+ * Parameters:
+ *      r, g, b: 8-bit color components
+ *
+ * Return:
+ *      RGB565 color value
+ *
+ ************************/
 uint16_t rgb888_to_rgb565(uint8_t r, uint8_t g, uint8_t b)
 {
         return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
 }
-
-
 
 /********** draw_bmp ********
  *
  * Draw a 24-bit uncompressed BMP stored in memory onto the framebuffer.
  *
  * Parameters:
- *      x0, y0:     top-left destination in pixels
- *      bmp_data:   pointer to the beginning of the BMP file data
- *      rotation:   0..3, clockwise 90-degree steps
+ *      x0, y0:   top-left destination in pixels
+ *      bmp_data: pointer to the beginning of the BMP file data
+ *      rotation: 0, 90, 180, or 270 degrees clockwise
  *
  * Notes:
  *      Supports 24-bit BMP with no compression.
@@ -133,17 +142,8 @@ void draw_bmp(uint16_t x0, uint16_t y0, const uint8_t *bmp_data,
                 return;
         }
 
-        uint8_t *pixel_data = bmp_data + header.data_offset;
+        uint8_t *pixel_data = (uint8_t *)(bmp_data + header.data_offset);
         uint16_t row_size = ((header.width * 3 + 3) / 4) * 4;
-
-        uint16_t display_width;
-
-        display_width = (rotation % 2 == 0) ?
-        header.width : header.height;
-        uint16_t display_height;
-
-        display_height = (rotation % 2 == 0) ?
-        header.height : header.width;
 
         for (int16_t y = header.height - 1; y >= 0; y--) {
                 for (uint16_t x = 0; x < header.width; x++) {
@@ -153,17 +153,15 @@ void draw_bmp(uint16_t x0, uint16_t y0, const uint8_t *bmp_data,
                         uint8_t g = pixel_data[pixel_offset + 1];
                         uint8_t r = pixel_data[pixel_offset + 2];
 
-                        uint16_t color;
-
-                        color = (uint16_t)(((r & 0xF8) << 8) |
-                        ((g & 0xFC) << 3) |
-                        (b >> 3));
+                        uint16_t color = (uint16_t)(((r & 0xF8) << 8) |
+                                                     ((g & 0xFC) << 3) |
+                                                     (b >> 3));
 
                         uint16_t src_x = x;
                         uint16_t src_y = header.height - 1 - y;
 
                         uint16_t dst_x, dst_y;
-                        switch(rotation) {
+                        switch (rotation) {
                         case 0:
                                 dst_x = src_x;
                                 dst_y = src_y;
@@ -189,6 +187,7 @@ void draw_bmp(uint16_t x0, uint16_t y0, const uint8_t *bmp_data,
                 }
         }
 }
+
 
 
 

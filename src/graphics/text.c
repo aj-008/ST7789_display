@@ -1,9 +1,8 @@
 /**************************************************************
  *
- *                     text.c
+ *                          text.c
  *
- *     Assignment: ST7789_display
- *     Author:     AJ Romeo
+ *     Author:  AJ Romeo
  *
  *     Text rendering and quote layout helpers using bitmap fonts.
  *
@@ -16,6 +15,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define FONT_W 16
+#define FONT_H 16
+#define LINE_H 16
+#define MAX_COLS 16
+#define MAX_LINES 10
+#define MAX_LINE_CHARS 64
 
 /********** draw_text ********
  *
@@ -24,7 +29,7 @@
  * Parameters:
  *      x:     left edge in pixels
  *      y:     top edge in pixels
- *      size:  font size in pixels (16, 32, or 48); other values use 16
+ *      size:  font size in pixels (16, 32, or 48)
  *      color: foreground color in native-endian RGB565
  *      text:  NUL-terminated string to draw
  *
@@ -37,17 +42,23 @@
 void draw_text(uint16_t x, uint16_t y, uint16_t size, uint16_t color,
                const char *text)
 {
-
         const uint8_t *font = CGA16;
-
         uint16_t x_curr = x;
         uint16_t y_curr = y;
 
         switch (size) {
-        case 16: font = CGA16; break;
-        case 32: font = jmk32; break;
-        case 48: font = big48; break;
-        default: font = CGA16; break;
+        case 16:
+                font = CGA16;
+                break;
+        case 32:
+                font = jmk32;
+                break;
+        case 48:
+                font = big48;
+                break;
+        default:
+                font = CGA16;
+                break;
         }
 
         size_t len = strlen(text);
@@ -57,15 +68,17 @@ void draw_text(uint16_t x, uint16_t y, uint16_t size, uint16_t color,
                         x_curr = x;
                         y_curr += size;
                 }
-                if (y_curr >= SCREEN_HEIGHT - size) return;
+                if (y_curr >= SCREEN_HEIGHT - size) {
+                        return;
+                }
 
                 char ch = text[i];
-                if (ch < ' ' || ch > '~') ch = '?';
+                if (ch < ' ' || ch > '~') {
+                        ch = '?';
+                }
 
-                uint16_t target;
-
-                target = (uint16_t)((size * size >> 3) *
-                (uint16_t)(ch - ' '));
+                uint16_t target = (uint16_t)((size * size >> 3) *
+                                              (uint16_t)(ch - ' '));
                 const uint8_t *draw_char = font + target;
 
                 draw_bitmap(x_curr, y_curr, size, size, color, draw_char);
@@ -73,10 +86,24 @@ void draw_text(uint16_t x, uint16_t y, uint16_t size, uint16_t color,
         }
 }
 
-void draw_text_bg(uint16_t x, uint16_t y, uint16_t size, uint16_t fg, 
+/********** draw_text_bg ********
+ *
+ * Draw text with both foreground and background colors.
+ *
+ * Parameters:
+ *      x, y:  left and top edge in pixels
+ *      size:  font size in pixels (16, 32, or 48)
+ *      fg:    foreground color
+ *      bg:    background color
+ *      text:  NUL-terminated string to draw
+ *
+ * Notes:
+ *      Text wraps at screen edge.
+ *
+ ************************/
+void draw_text_bg(uint16_t x, uint16_t y, uint16_t size, uint16_t fg,
                   uint16_t bg, const char *text)
 {
-
         const uint8_t *font;
         uint16_t x_curr = x;
         uint16_t y_curr = y;
@@ -101,25 +128,40 @@ void draw_text_bg(uint16_t x, uint16_t y, uint16_t size, uint16_t fg,
                         x_curr = x;
                         y_curr += size;
                 }
-                if (y_curr >= SCREEN_HEIGHT - size) return;
+                if (y_curr >= SCREEN_HEIGHT - size) {
+                        return;
+                }
 
                 char ch = text[i];
-                if (ch < ' ' || ch > '~') ch = '?'; /* guard */
+                if (ch < ' ' || ch > '~') {
+                        ch = '?';
+                }
 
                 uint16_t target = (size * size >> 3) * (uint16_t)(ch - ' ');
                 const uint8_t *draw_char = font + target;
 
-                draw_bitmap_bg(x_curr, y_curr, size, size, fg, bg, draw_char);
+                draw_bitmap_bg(x_curr, y_curr, size, size, fg, bg, 
+                               draw_char);
 
                 x_curr += size;
         }
 }
 
-
+/********** draw_text_bg_unwrapped ********
+ *
+ * Draw text with background color, without wrapping.
+ *
+ * Parameters:
+ *      x, y:  left and top edge in pixels
+ *      size:  font size in pixels (16, 32, or 48)
+ *      fg:    foreground color
+ *      bg:    background color
+ *      text:  NUL-terminated string to draw
+ *
+ ************************/
 void draw_text_bg_unwrapped(uint16_t x, uint16_t y, uint16_t size, uint16_t fg,
                             uint16_t bg, const char *text)
 {
-
         const uint8_t *font;
         uint16_t x_curr = x;
         uint16_t y_curr = y;
@@ -141,46 +183,58 @@ void draw_text_bg_unwrapped(uint16_t x, uint16_t y, uint16_t size, uint16_t fg,
 
         for (uint16_t i = 0; text[i] != '\0'; i++) {
                 char ch = text[i];
-                if (ch < ' ' || ch > '~') ch = '?'; /* guard */
+                if (ch < ' ' || ch > '~') {
+                        ch = '?';
+                }
 
                 uint16_t target = (size * size >> 3) * (uint16_t)(ch - ' ');
                 const uint8_t *draw_char = font + target;
 
-                draw_bitmap_bg(x_curr, y_curr, size, size, fg, bg, draw_char);
+                draw_bitmap_bg(x_curr, y_curr, size, size, fg, bg, 
+                               draw_char);
 
                 x_curr += size;
         }
 }
 
-void draw_text_center(uint16_t y, uint16_t size, uint16_t color, 
+/********** draw_text_center ********
+ *
+ * Draw text horizontally centered on the screen.
+ *
+ * Parameters:
+ *      y:     vertical position in pixels
+ *      size:  font size in pixels
+ *      color: foreground color
+ *      text:  NUL-terminated string to draw
+ *
+ ************************/
+void draw_text_center(uint16_t y, uint16_t size, uint16_t color,
                       const char *text)
 {
-
         uint16_t text_width = strlen(text) * size;
         uint16_t x = (SCREEN_WIDTH - text_width) / 2;
         draw_text(x, y, size, color, text);
 }
 
+/********** draw_text_center_bg ********
+ *
+ * Draw text horizontally centered with background color.
+ *
+ * Parameters:
+ *      y:          vertical position in pixels
+ *      size:       font size in pixels
+ *      text_color: foreground color
+ *      bg:         background color
+ *      text:       NUL-terminated string to draw
+ *
+ ************************/
 void draw_text_center_bg(uint16_t y, uint16_t size, uint16_t text_color,
                          uint16_t bg, const char *text)
 {
-
         uint16_t text_width = strlen(text) * size;
         uint16_t x = (SCREEN_WIDTH - text_width) / 2;
         draw_text_bg(x, y, size, text_color, bg, text);
 }
-
-
-
-
-#define FONT_W 16
-#define FONT_H 16
-#define LINE_H 16
-
-#define MAX_COLS 16
-#define MAX_LINES 10
-#define MAX_LINE_CHARS 64
-
 
 
 /********** wrap_words_fixed16 ********
@@ -191,6 +245,9 @@ void draw_text_center_bg(uint16_t y, uint16_t size, uint16_t text_color,
  *      text:   NUL-terminated input string
  *      lines:  output buffer of MAX_LINES x (MAX_COLS + 1)
  *
+ * Return:
+ *      number of lines written
+ *
  * Notes:
  *      Multiple spaces are treated as a single separator.
  *      Each output line is NUL-terminated.
@@ -200,22 +257,30 @@ static int wrap_words_fixed16(const char *text,
                               char lines[MAX_LINES][MAX_LINE_CHARS])
 {
         int line = 0;
-        int col  = 0;
+        int col = 0;
 
         while (*text && line < MAX_LINES) {
-                while (*text == ' ') text++;
+                while (*text == ' ') {
+                        text++;
+                }
 
-                if (!*text) break;
+                if (!*text) {
+                        break;
+                }
 
                 const char *word = text;
                 int wlen = 0;
-                while (word[wlen] && word[wlen] != ' ') wlen++;
+                while (word[wlen] && word[wlen] != ' ') {
+                        wlen++;
+                }
 
                 if (col > 0 && (col + 1 + wlen) > MAX_COLS) {
                         lines[line][col] = '\0';
                         line++;
                         col = 0;
-                        if (line >= MAX_LINES) break;
+                        if (line >= MAX_LINES) {
+                                break;
+                        }
                 }
 
                 if (col == 0 && wlen > MAX_COLS) {
@@ -229,7 +294,9 @@ static int wrap_words_fixed16(const char *text,
                         continue;
                 }
 
-                if (col > 0) lines[line][col++] = ' ';
+                if (col > 0) {
+                        lines[line][col++] = ' ';
+                }
 
                 memcpy(&lines[line][col], text, (size_t)wlen);
                 col += wlen;
@@ -249,10 +316,8 @@ static int wrap_words_fixed16(const char *text,
  * Render a quote centered on screen using the 16x16 font.
  *
  * Parameters:
- *      y0:     starting y coordinate (top of the text block)
- *      fg:     foreground color in native-endian RGB565
- *      bg:     background color in native-endian RGB565
- *      quote:  NUL-terminated quote text
+ *      quote: NUL-terminated quote text
+ *      color: foreground color in native-endian RGB565
  *
  * Notes:
  *      Uses wrap_words_fixed16() and draws each line horizontally centered.
