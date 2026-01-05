@@ -11,6 +11,7 @@
 #include "shapes.h"
 #include "util.h"
 #include <stdlib.h>
+#include <stdbool.h>
 
 /********** draw_circle ********
  *
