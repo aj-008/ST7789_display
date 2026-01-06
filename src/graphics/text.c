@@ -211,10 +211,14 @@ void draw_text_bg_unwrapped(uint16_t x, uint16_t y, uint16_t size, uint16_t fg,
 void draw_text_center(uint16_t y, uint16_t size, uint16_t color,
                       const char *text)
 {
-        uint16_t text_width = strlen(text) * size;
-        uint16_t x = (SCREEN_WIDTH - text_width) / 2;
-        draw_text(x, y, size, color, text);
+    int text_width = (int)strlen(text) * (int)size;
+    int x = ((int)SCREEN_WIDTH - text_width) / 2;
+    if (x < 0) x = 0;  // clamp instead of underflow
+    draw_text((uint16_t)x, y, size, color, text);
 }
+
+
+
 
 /********** draw_text_center_bg ********
  *
@@ -231,9 +235,10 @@ void draw_text_center(uint16_t y, uint16_t size, uint16_t color,
 void draw_text_center_bg(uint16_t y, uint16_t size, uint16_t text_color,
                          uint16_t bg, const char *text)
 {
-        uint16_t text_width = strlen(text) * size;
-        uint16_t x = (SCREEN_WIDTH - text_width) / 2;
-        draw_text_bg(x, y, size, text_color, bg, text);
+    int text_width = (int)strlen(text) * (int)size;
+    int x = ((int)SCREEN_WIDTH - text_width) / 2;
+    if (x < 0) x = 0;
+    draw_text_bg((uint16_t)x, y, size, text_color, bg, text);
 }
 
 
