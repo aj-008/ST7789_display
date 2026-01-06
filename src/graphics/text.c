@@ -84,6 +84,14 @@ void draw_text(uint16_t x, uint16_t y, uint16_t size, uint16_t color,
                 draw_bitmap(x_curr, y_curr, size, size, color, draw_char);
                 x_curr += size;
         }
+
+        uint16_t w_px = (uint16_t)(strlen(text) * size);
+        uint16_t h_px = size;
+
+        if (x + w_px > SCREEN_WIDTH) w_px = (uint16_t)(SCREEN_WIDTH - x);
+        if (y + h_px > SCREEN_HEIGHT) h_px = (uint16_t)(SCREEN_HEIGHT - y);
+
+        present_rect(x, y, w_px, h_px);
 }
 
 /********** draw_text_bg ********
@@ -145,6 +153,13 @@ void draw_text_bg(uint16_t x, uint16_t y, uint16_t size, uint16_t fg,
 
                 x_curr += size;
         }
+        uint16_t w_px = (uint16_t)(strlen(text) * size);
+        uint16_t h_px = size;
+
+        if (x + w_px > SCREEN_WIDTH) w_px = (uint16_t)(SCREEN_WIDTH - x);
+        if (y + h_px > SCREEN_HEIGHT) h_px = (uint16_t)(SCREEN_HEIGHT - y);
+
+        present_rect(x, y, w_px, h_px);
 }
 
 /********** draw_text_bg_unwrapped ********
@@ -195,6 +210,13 @@ void draw_text_bg_unwrapped(uint16_t x, uint16_t y, uint16_t size, uint16_t fg,
 
                 x_curr += size;
         }
+        uint16_t w_px = (uint16_t)(strlen(text) * size);
+        uint16_t h_px = size;
+
+        if (x + w_px > SCREEN_WIDTH) w_px = (uint16_t)(SCREEN_WIDTH - x);
+        if (y + h_px > SCREEN_HEIGHT) h_px = (uint16_t)(SCREEN_HEIGHT - y);
+
+        present_rect(x, y, w_px, h_px);
 }
 
 /********** draw_text_center ********
