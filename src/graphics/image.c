@@ -21,7 +21,7 @@
  *      x0, y0: top-left destination in pixels
  *      w, h:   bitmap dimensions in pixels
  *      color:  foreground color in native-endian RGB565
- *      bitmap: bitmap bits, row-major, MSB-first within each byte
+ *      bitmap: bitmap bits, row-major, LSB-first within each byte
  *
  ************************/
 void draw_bitmap(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h,
@@ -32,7 +32,7 @@ void draw_bitmap(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h,
     for (uint16_t row = 0; row < h; row++) {
         for (uint16_t col = 0; col < w; col++) {
             uint16_t byte_index = row * bytes_per_row + (col / 8);
-            uint8_t  bit_mask   = (uint8_t)(0x80u >> (col & 7));
+            uint8_t  bit_mask   = (uint8_t)(1u << (col & 7));
 
             if (bitmap[byte_index] & bit_mask) {
                 draw_pixel(x0 + col, y0 + row, color);
@@ -50,7 +50,7 @@ void draw_bitmap(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h,
  *      w, h:   bitmap dimensions in pixels
  *      fg:     foreground color in native-endian RGB565
  *      bg:     background color in native-endian RGB565
- *      bitmap: bitmap bits, row-major, MSB-first within each byte
+ *      bitmap: bitmap bits, row-major, LSB-first within each byte
  *
  ************************/
 void draw_bitmap_bg(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h,
@@ -61,13 +61,14 @@ void draw_bitmap_bg(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h,
     for (uint16_t row = 0; row < h; row++) {
         for (uint16_t col = 0; col < w; col++) {
             uint16_t byte_index = row * bytes_per_row + (col / 8);
-            uint8_t  bit_mask   = (uint8_t)(0x80u >> (col & 7)); 
+            uint8_t  bit_mask   = (uint8_t)(1u << (col & 7));
             uint16_t c          = (bitmap[byte_index] & bit_mask) ? fg : bg;
 
             draw_pixel(x0 + col, y0 + row, c);
         }
     }
 }
+
 
 /********** parse_bmp_header ********
  *
